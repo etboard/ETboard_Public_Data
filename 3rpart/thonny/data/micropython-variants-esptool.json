@@ -8,7 +8,7 @@
         "downloads": [
             {
                 "version": "1.16-237 2021-06-08",
-                "url": "https://raw.githubusercontent.com/etboard/thonny/master/resources/firmware/etboard_firmware_micropython_custom_0608_last.bin"
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_0608_last.bin"
             },
             {
                 "version": "1.16-237 2021-08-31",
