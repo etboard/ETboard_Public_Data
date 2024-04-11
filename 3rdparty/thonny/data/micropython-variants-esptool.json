@@ -3,7 +3,7 @@
         "vendor": "KETRi",
         "model": "KETRi ETboard Version 1",
         "family": "esp32",
-        "title": "KETRi ETboard V1",
+        "title": "ETboard V1",
         "info_url": "http://et.ketri.re.kr/board-micropython",
         "downloads": [
             {
