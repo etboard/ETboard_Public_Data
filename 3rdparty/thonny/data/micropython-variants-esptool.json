@@ -17,6 +17,10 @@
             {
                 "version": "베타 버전: 2024-04-06, 1.20.000",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.20_230806_last.bin"
+            },           
+            {
+                "version": "베타 버전: 2024-07-29, 1.22.2",
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240729_last.bin"
             }            
         ]
     }
