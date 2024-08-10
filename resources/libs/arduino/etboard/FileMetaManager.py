@@ -83,10 +83,10 @@ class FileMetaManager:
             {"header": self.header.to_dict()},
             {"body": self.body.to_dict()}
         ]
-        print("Saving data:", data)  # 디버깅 출력 추가
+        #print("Saving data:", data)  # 디버깅 출력 추가
         with open(self.file_path, 'w', encoding='utf-8') as file:
             json.dump(data, file, ensure_ascii=False, indent=4)
-        print(f"File saved to {self.file_path}")  # 디버깅 출력 추가
+        #print(f"File saved to {self.file_path}")  # 디버깅 출력 추가
 
     def read(self):
         return {

@@ -15,7 +15,7 @@ def find_created_folders(root_dir):
                 # 경로 분할
                 path_parts = root.split(os.sep)
                 main_folder = path_parts[-2] if len(path_parts) > 1 else ''
-                print(f"{main_folder}, {dir_name}")
+                #print(f"{main_folder}, {dir_name}")
                 file_meta_manager.update('body', main_folder, {"created_at": dir_name})
 
 if __name__ == "__main__":
