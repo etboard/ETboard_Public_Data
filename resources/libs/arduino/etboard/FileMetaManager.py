@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 
 class FileMetaHeader:
     def __init__(self, filename="", content="", description="", author="", created_at="", updated_at=""):
@@ -118,6 +119,17 @@ class FileMetaManager:
                 del self.body.entries[key]
         self._save_file()
 
+    def clear_body(self):
+        self.body.entries.clear()
+        self._save_file()
+        print("All entries in the body have been deleted.")
+
+
+def get_current_datetime():
+    now = datetime.datetime.now()
+    return now.strftime("%Y_%m_%d__%H_%M_%S")
+
+'''
 # Usage example
 file_meta_manager = FileMetaManager('_file_meta.json')
 
@@ -131,6 +143,9 @@ new_header = FileMetaHeader(
     updated_at="2024-08-11"
 )
 file_meta_manager.create('header', new_header)
+
+# Update the 'updated_at' field in the header
+file_meta_manager.update('header', 'updated_at', get_current_datetime())
 
 # Create a new body entry using the FileMetaBodyEntry class
 new_body_entry = FileMetaBodyEntry(
@@ -151,3 +166,10 @@ file_meta_manager.update('body', 'ET_BluetoothSerial1', {"ignore": True})
 
 # Read the updated state of the JSON data
 print(file_meta_manager.read())
+
+# Clear all entries in the body
+file_meta_manager.clear_body()
+
+# Read the state after clearing the body
+print(file_meta_manager.read())
+'''
