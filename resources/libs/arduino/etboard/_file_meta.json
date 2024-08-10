@@ -4,26 +4,22 @@
             "filename": "_file_meta.json",
             "content": "라이브러리 버전 관리 메타 파일",
             "description": "라이브러리 버전 관리를 위한 메타 파일입니다.",
-            "author": "손철수(cheolsu.son@gmail.com)",
+            "author": "손철수",
             "created_at": "2024-08-09",
-            "updated_at": "2024-08-11"
+            "updated_at": "2024_08_10__22_34_13"
         }
     },
     {
         "body": {
             "ET_BluetoothSerial1": {
                 "created_at": "00._created_2021_08_04__22_18_35",
-                "ignore": true
+                "ignore": false
             },
             "ET_BluetoothSerial2": {
                 "created_at": "00._created_2022_08_04__22_18_35",
                 "ignore": false
             },
-            "ET_BluetoothSerial3": {
-                "created_at": "2024_08_04__22_18_35",
-                "ignore": false
-            },
-            "ET_DHTSensor": {
+            "ET_DHTSensor2": {
                 "created_at": "00._created_2023_08_04__22_18_35",
                 "ignore": false
             }
