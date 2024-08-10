@@ -125,8 +125,10 @@ class FileMetaManager:
         print("All entries in the body have been deleted.")
 
 
+import pytz
 def get_current_datetime():
-    now = datetime.datetime.now()
+    korea_tz = pytz.timezone('Asia/Seoul')
+    now = datetime.now(korea_tz)
     return now.strftime("%Y_%m_%d__%H_%M_%S")
 
 '''
