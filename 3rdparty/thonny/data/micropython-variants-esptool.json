@@ -15,13 +15,18 @@
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_0831_last.bin"
             },            
             {
-                "version": "베타 버전: 2024-04-06, 1.20.000",
+                "version": "베타 버전1: 2024-04-06, 1.20.000",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.20_230806_last.bin"
             },           
             {
-                "version": "베타 버전: 2024-07-29, 1.22.2",
+                "version": "베타 버전2: 2024-07-29, 1.22.2, Ble",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240729_last.bin"
-            }            
+            },
+            {
+                "version": "베타 버전3: 2024-08-18, 1.22.2, IoT",
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240818_last.bin"
+            }                        
+
         ]
     }
 ]
