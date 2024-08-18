@@ -6,13 +6,13 @@
             "description": "라이브러리 버전 관리를 위한 메타 파일입니다.",
             "author": "손철수",
             "created_at": "2024-08-09",
-            "updated_at": "2024_08_12__22_41_15"
+            "updated_at": "2024_08_18__18_20_16"
         }
     },
     {
         "body": {
             "ET_U8G2": {
-                "created_at": "00._created_2024_08_11__14_42_01",
+                "created_at": "00._created_2024_08_17__20_59_27",
                 "ignore": false
             },
             "ET_PPD42NS": {
