@@ -1,0 +1,28 @@
+[
+    {
+        "header": {
+            "filename": "_file_meta.json",
+            "content": "아두이노 라이브러리 버전 관리 메타 파일",
+            "description": "아두이노 오리지널 라이브러리 버전 관리를 위한 메타 파일입니다.",
+            "author": "손철수",
+            "created_at": "2024_09_04",
+            "updated_at": "2024_08_23__13_08_07"
+        }
+    },
+    {
+        "body": {
+            "U8g2": {
+                "created_at": "00._created_2024_08_17__20_59_27",
+                "ignore": false,
+                "version": "2.33.15",
+                "archiveFileName": "U8g2-2.33.15.zip"
+            },
+            "Adafruit_NeoPixel": {
+                "created_at": "00._created_2024_08_11__14_41_18",
+                "ignore": false,
+                "version": "1.12.3",
+                "archiveFileName": "Adafruit_NeoPixel-1.12.3.zip"
+            }
+        }
+    }
+]
