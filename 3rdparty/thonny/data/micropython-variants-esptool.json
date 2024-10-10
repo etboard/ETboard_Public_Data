@@ -5,15 +5,19 @@
         "family": "esp32",
         "title": "ETboard V1",
         "info_url": "http://et.ketri.re.kr/board-micropython",
-        "downloads": [            
+        "downloads": [                        
             {
-                "version": "안정 버전: 2024-08-24, 1.22.2, IoT",
-                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240824_last.bin"
-            },
-            {
-                "version": "베타 버전: 2024-09-11, 1.22.2, IoT, Servo",
+                "version": "안정 버전: 2024-09-11, 1.22.2, IoT, Servo",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240911_last.bin"
             },
+            {
+                "version": "베타 버전: 2024-10-11, 1.22.2, IoT, Servo, AWS",
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_241011_last.bin"
+            },            
+            {
+                "version": "예전 버전: 2024-08-24, 1.22.2, IoT",
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240824_last.bin"
+            },            
             {
                 "version": "예전 버전: 2024-04-21,  1.22.2",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240421_last.bin"
