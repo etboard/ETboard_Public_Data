@@ -11,6 +11,10 @@
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_240911_last.bin"
             },
             {
+                "version": "베타 버전: 2024-10-13, 1.22.2, IoT, Servo, AWS, WDT",
+                "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_241013_last.bin"
+            },    
+            {
                 "version": "베타 버전: 2024-10-11, 1.22.2, IoT, Servo, AWS",
                 "url": "https://raw.githubusercontent.com/etboard/ETboard_Public_Data/master/resources/firmware/micropython/etboard_firmware_micropython_custom_v1.22.2_241011_last.bin"
             },            
