@@ -22,6 +22,6 @@
    5. 폴더안 dist 폴더를 만든다.(OneWire\dist)
    6. 버전을 나타내는 폴더를 만든다.(OneWire\dist\00._created_2024_11_06__15_15_55)
    7. dist 폴더 안애 압축파일을 복사 한다.(OneWire\dist\OneWire.zip)
-   8. __file_meta.json 파일에 메타 정보를 업데이트 한다.
+   8. __file_meta.json 파일에 메타 정보를 업데이트 한다.(app\Arduino15\library_index.json 참고)
    
 
