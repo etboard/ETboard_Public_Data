@@ -38,6 +38,14 @@
                 "url": "https://downloads.arduino.cc/libraries/github.com/bblanchon/ArduinoJson-6.19.4.zip"
             },
 
+            "DallasTemperature": {
+                "created_at": "00._created_2024_11_06__15_15_55",
+                "ignore": false,
+                "name": "DallasTemperature",
+                "version": "3.9.0",
+                "url": "https://downloads.arduino.cc/libraries/github.com/milesburton/DallasTemperature-3.9.0.zip"
+            },
+
             "DHT_sensor_library": {
                 "created_at": "00._created_2024_09_04__15_15_55",
                 "ignore": false,
@@ -61,6 +69,14 @@
                 "version": "1.13.3",
                 "url": "https://downloads.arduino.cc/libraries/github.com/plapointe6/EspMQTTClient-1.13.3.zip"
             },
+
+            "OneWire": {
+                "created_at": "00._created_2024_11_06__15_15_55",
+                "ignore": false,
+                "name": "OneWire",
+                "version": "2.3.8",
+                "url": "https://downloads.arduino.cc/libraries/github.com/PaulStoffregen/OneWire-2.3.8.zip"
+            },            
 
             "PubSubClient": {
                 "created_at": "00._created_2024_09_04__15_15_55",
