@@ -162,14 +162,13 @@ jobs:
           echo "ARTIFACT_PATH=${{ env.FILENAME }}.zip" >> $GITHUB_ENV
 
       - name: Upload bundle as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ETboard_Arduino_Libraries
           path: ${{ env.ARTIFACT_PATH }}
           retention-days: 90
 
       - name: Create GitHub Release
-        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -179,6 +178,7 @@ jobs:
           body_path: ${{ env.BUNDLE_DIR }}/CHANGELOG.txt
           draft: false
           prerelease: false
+        id: create_release
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
