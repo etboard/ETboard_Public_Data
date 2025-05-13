@@ -1,0 +1,196 @@
+# ********************************************************************************
+# FileName     : create-arduino-library-bundle.yml
+# Description  : Create ETboard Arduino Library Bundle Package from public repository
+# Author       : SCS
+# Created Date : 2025.05.13
+# Reference    : Based on existing copy-to-public-repository.yml workflow
+# ********************************************************************************
+
+name: Create ETboard Arduino Library Bundle
+
+# 기존 워크플로우 완료 후 실행되도록 설정
+on:
+  workflow_run:
+    workflows: ["Copy to Destination Public Repository"]
+    types:
+      - completed
+  workflow_dispatch:  # 수동 트리거 옵션 유지
+
+env:
+  BUNDLE_DIR: "arduino_library_bundle_temp"
+  RELEASE_PREFIX: "arduino_library_bundle"
+
+jobs:
+  create-bundle:
+    # 기존 워크플로우가 성공했을 때만 실행
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 전체 히스토리 필요
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Set version variables
+        id: set_version
+        run: |
+          # 날짜 기반 버전 설정
+          TODAY=$(date +%Y.%m.%d)
+          VERSION="${TODAY}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_DATE=${TODAY}" >> $GITHUB_ENV
+          
+          # 파일명 설정
+          FILENAME="ETboard_Arduino_Libraries_v${VERSION}"
+          echo "FILENAME=${FILENAME}" >> $GITHUB_ENV
+          
+          # Release 태그 설정
+          TAG="${{ env.RELEASE_PREFIX }}_v${VERSION}"
+          echo "TAG=${TAG}" >> $GITHUB_ENV
+
+      - name: Create bundle directory structure
+        run: |
+          echo ">> Creating Arduino library bundle directory structure..."
+          # 작업 디렉토리 생성 (기존 워크플로우와 충돌 방지)
+          mkdir -p ${{ env.BUNDLE_DIR }}/libraries
+          
+          # 아두이노 라이브러리 파일 복사
+          cp -r resources/libs/arduino/etboard/* ${{ env.BUNDLE_DIR }}/libraries/
+          cp -r resources/libs/arduino/original/* ${{ env.BUNDLE_DIR }}/libraries/
+          
+          # _file_meta.json 파일 제외 (필요 없는 메타 파일 제거)
+          find ${{ env.BUNDLE_DIR }}/libraries -name "_file_meta.json" -type f -delete
+
+      - name: Extract version information from meta files
+        id: extract_versions
+        run: |
+          echo ">> Extracting Arduino library version information..."
+          # 메타 파일에서 버전 정보 추출
+          python -c "
+import json
+import os
+
+def extract_versions():
+    versions = {}
+    
+    # ETboard 아두이노 라이브러리 버전 정보
+    etboard_meta = 'resources/libs/arduino/etboard/_file_meta.json'
+    if os.path.exists(etboard_meta):
+        with open(etboard_meta, 'r') as f:
+            data = json.load(f)
+            for lib, info in data.items():
+                if 'version' in info:
+                    versions[lib] = info['version']
+    
+    # Original 아두이노 라이브러리 버전 정보
+    original_meta = 'resources/libs/arduino/original/_file_meta.json'
+    if os.path.exists(original_meta):
+        with open(original_meta, 'r') as f:
+            data = json.load(f)
+            for lib, info in data.items():
+                if 'version' in info:
+                    versions[lib] = info['version']
+    
+    # 버전 정보를 CHANGELOG에 사용할 형식으로 출력
+    for lib, version in versions.items():
+        print(f'{lib}: v{version}')
+
+extract_versions()
+          " > ${{ env.BUNDLE_DIR }}/versions.txt
+
+      - name: Create README
+        run: |
+          echo ">> Creating Arduino library README file..."
+          
+          # README.md 생성
+          cat > ${{ env.BUNDLE_DIR }}/README.md << 'EOF'
+          # ETboard 아두이노(Arduino) 라이브러리 묶음 패키지 v${{ env.VERSION }}
+
+          이 패키지는 ETboard 하드웨어를 위한 모든 필수 Arduino 라이브러리를 포함하고 있습니다.
+
+          ## 설치 방법
+
+          ### 수동 설치
+          1. 이 패키지의 압축을 해제합니다.
+          2. `libraries` 폴더의 내용을 Arduino 스케치 폴더의 `libraries` 폴더에 복사합니다.
+             - Windows: `%USERPROFILE%\Documents\Arduino\libraries\`
+             - Mac/Linux: `~/Documents/Arduino/libraries/`
+          3. Arduino IDE를 재시작합니다.
+
+          ## 포함된 아두이노 라이브러리
+          
+          $(cat ${{ env.BUNDLE_DIR }}/versions.txt)
+          
+          ## 문의사항
+          
+          문제가 발생하거나 도움이 필요하면 GitHub 이슈 트래커를 이용해 주세요.
+          EOF
+
+      - name: Create CHANGELOG
+        run: |
+          echo ">> Creating Arduino library CHANGELOG file..."
+          
+          # CHANGELOG.txt 생성
+          cat > ${{ env.BUNDLE_DIR }}/CHANGELOG.txt << 'EOF'
+          # ETboard 아두이노 라이브러리 변경 이력
+
+          ## ${{ env.RELEASE_DATE }} - 새 버전 배포
+          
+          ### 포함된 아두이노 라이브러리 버전:
+          $(cat ${{ env.BUNDLE_DIR }}/versions.txt)
+          EOF
+
+      - name: Create ZIP bundle
+        run: |
+          echo ">> Creating Arduino library ZIP bundle..."
+          cd ${{ env.BUNDLE_DIR }}
+          zip -r ../${{ env.FILENAME }}.zip *
+          cd ..
+          echo "Arduino library ZIP bundle created: ${{ env.FILENAME }}.zip"
+          
+          # 아티팩트 경로 설정
+          echo "ARTIFACT_PATH=${{ env.FILENAME }}.zip" >> $GITHUB_ENV
+
+      - name: Upload bundle as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ETboard_Arduino_Libraries
+          path: ${{ env.ARTIFACT_PATH }}
+          retention-days: 90
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: ETboard Arduino Libraries v${{ env.VERSION }}
+          body_path: ${{ env.BUNDLE_DIR }}/CHANGELOG.txt
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.ARTIFACT_PATH }}
+          asset_name: ${{ env.FILENAME }}.zip
+          asset_content_type: application/zip
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo ">> Cleaning up temporary Arduino library files..."
+          rm -rf ${{ env.BUNDLE_DIR }}
+
+# ********************************************************************************
+# End of File
+# ********************************************************************************
