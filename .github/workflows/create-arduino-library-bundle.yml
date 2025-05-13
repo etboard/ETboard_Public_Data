@@ -185,4 +185,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.ARTIFACT_PATH }}
+          asset_name: ${{ env.FILENAME }}.zip
+          asset_content_type: application/zip
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo ">> Cleaning up temporary Arduino library files..."
+          rm -rf ${{ env.BUNDLE_DIR }}
+          rm -f extract_versions.py
+
+# ********************************************************************************
+# End of File
+# ********************************************************************************
