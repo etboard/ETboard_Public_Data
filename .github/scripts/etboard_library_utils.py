@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-# .github/scripts/etboard_library_utils.py
+# ********************************************************************************
+# FileName     : etboard_library_utils.py
+# Description  : ETboard Arduino Library Bundle Utility
+# Author       : ETboard Team
+# Created Date : 2024.03
+# Reference    : pc에서 테스트 후에 github action에서 사용토록 제작됨
+# Usage        : .github/scripts 폴더로 이동한 뒤에
+#               python etboard_library_utils.py [command] [options]
+#               commands:
+#                 - process-libraries: Process library files
+#                 - create-bundle: Create ZIP bundle
+#                 - full-process: Run full process
+#               example : python ./etboard_library_utils.py full-process --debug
+# ********************************************************************************
 
 import json
 import os
@@ -8,55 +21,11 @@ import zipfile
 import shutil
 import glob
 from pathlib import Path
+from datetime import datetime
 
-def extract_versions(etboard_meta_path, original_meta_path):
-    """
-    etboard와 original 라이브러리의 버전 정보를 추출하는 함수
-    """
-    versions = {}
-    
-    # ETboard 아두이노 라이브러리 버전 정보
-    if os.path.exists(etboard_meta_path):
-        try:
-            with open(etboard_meta_path, 'r') as f:
-                data = json.load(f)
-                # 데이터가 딕셔너리인지 확인
-                if isinstance(data, dict):
-                    for lib, info in data.items():
-                        if isinstance(info, dict) and 'version' in info:
-                            versions[lib] = info['version']
-                # 리스트인 경우 처리
-                elif isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict) and 'name' in item and 'version' in item:
-                            versions[item['name']] = item['version']
-        except Exception as e:
-            print(f"Error reading {etboard_meta_path}: {e}")
-    
-    # Original 아두이노 라이브러리 버전 정보
-    if os.path.exists(original_meta_path):
-        try:
-            with open(original_meta_path, 'r') as f:
-                data = json.load(f)
-                # 데이터가 딕셔너리인지 확인
-                if isinstance(data, dict):
-                    for lib, info in data.items():
-                        if isinstance(info, dict) and 'version' in info:
-                            versions[lib] = info['version']
-                # 리스트인 경우 처리
-                elif isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict) and 'name' in item and 'version' in item:
-                            versions[item['name']] = item['version']
-        except Exception as e:
-            print(f"Error reading {original_meta_path}: {e}")
-    
-    # 버전 정보가 없는 경우 기본값 설정
-    if not versions:
-        print("No version information found. Using default values.")
-        versions["ETboard_Libraries"] = "latest"
-    
-    return versions
+# 스크립트 경로를 기준으로 프로젝트 루트 계산
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '../..'))
 
 def process_library(lib_dir, bundle_dir, extract_dir, debug=False):
     """
@@ -66,7 +35,8 @@ def process_library(lib_dir, bundle_dir, extract_dir, debug=False):
     exclude_patterns = [
         "_file_meta.json",
         "MetaFileUpdate.py", 
-        "FileMetaManager.py"
+        "FileMetaManager.py",
+        "__pycache__"
     ]
     
     # 라이브러리 이름 추출
@@ -230,64 +200,24 @@ def create_bundle(bundle_dir, output_file, version, versions=None, debug=False):
     if debug:
         print(f"Creating bundle ZIP: {output_file}")
     
-    # README 및 CHANGELOG 생성
-    readme_content = f"""# ETboard 아두이노(Arduino) 라이브러리 묶음 패키지 v{version}
-
-이 패키지는 ETboard 하드웨어를 위한 모든 필수 Arduino 라이브러리를 포함하고 있습니다.
-
-## 설치 방법
-
-### 수동 설치
-1. 이 패키지의 압축을 해제합니다.
-2. 압축을 해제한 폴더 내의 모든 라이브러리 폴더를 Arduino 스케치 폴더의 `libraries` 폴더에 복사합니다.
-   - Windows: `%USERPROFILE%\Documents\Arduino\libraries\\`
-   - Mac/Linux: `~/Documents/Arduino/libraries/`
-3. Arduino IDE를 재시작합니다.
-
-## 포함된 아두이노 라이브러리
-"""
-    
-    if versions:
-        for lib, ver in versions.items():
-            readme_content += f"\n{lib}: v{ver}"
-    
-    changelog_content = f"""# ETboard 아두이노 라이브러리 변경 이력
-
-## {version} - 새 버전 배포
-
-### 포함된 아두이노 라이브러리 버전:
-"""
-    
-    if versions:
-        for lib, ver in versions.items():
-            changelog_content += f"\n{lib}: v{ver}"
-    
-    # 임시 파일 생성
-    readme_path = os.path.join(os.path.dirname(bundle_dir), "README.md")
-    changelog_path = os.path.join(os.path.dirname(bundle_dir), "CHANGELOG.txt")
-    
-    with open(readme_path, "w", encoding="utf-8") as f:
-        f.write(readme_content)
-    
-    with open(changelog_path, "w", encoding="utf-8") as f:
-        f.write(changelog_content)
-    
     # ZIP 파일 생성
     with zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
         # 라이브러리 파일 추가
         for root, dirs, files in os.walk(bundle_dir):
             for file in files:
                 file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, bundle_dir)
+                # libraries 폴더 아래에 상대 경로로 저장
+                arcname = os.path.join('libraries', os.path.relpath(file_path, bundle_dir))
                 zipf.write(file_path, arcname)
         
-        # README 및 CHANGELOG 추가
-        zipf.write(readme_path, "README.md")
-        zipf.write(changelog_path, "CHANGELOG.txt")
-    
-    # 임시 파일 삭제
-    os.remove(readme_path)
-    os.remove(changelog_path)
+        # 생성 정보 폴더와 파일 추가 (libraries와 동일한 레벨)
+        timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
+        signature_dir = f"00._created_{timestamp}"
+        signature_path = os.path.join(signature_dir, "signature.txt")
+        
+        # 빈 signature.txt 파일 생성
+        with zipf.open(signature_path, 'w') as f:
+            f.write(b'')
     
     if debug:
         print(f"ZIP bundle created: {output_file}")
@@ -314,38 +244,38 @@ def main():
     메인 실행 함수
     """
     import argparse
-    from datetime import datetime
     
     parser = argparse.ArgumentParser(description='ETboard Arduino Library Bundle Utility')
-    parser.add_argument('command', choices=['extract-versions', 'process-libraries', 'create-bundle', 'full-process'],
+    parser.add_argument('command', choices=['process-libraries', 'create-bundle', 'full-process'],
                         help='Command to execute')
-    parser.add_argument('--etboard-path', default='resources/libs/arduino/etboard',
+    parser.add_argument('--etboard-path', 
+                        default=os.path.join(PROJECT_ROOT, 'resources/libs/arduino/etboard'),
                         help='Path to ETboard libraries')
-    parser.add_argument('--original-path', default='resources/libs/arduino/original',
+    parser.add_argument('--original-path', 
+                        default=os.path.join(PROJECT_ROOT, 'resources/libs/arduino/original'),
                         help='Path to original libraries')
-    parser.add_argument('--bundle-dir', default='arduino_library_bundle_temp',
+    parser.add_argument('--bundle-dir', 
+                        default=os.path.join(PROJECT_ROOT, 'temp', 'arduino_library_bundle'),
                         help='Directory for bundle creation')
-    parser.add_argument('--extract-dir', default='arduino_library_extract_temp',
+    parser.add_argument('--extract-dir', 
+                        default=os.path.join(PROJECT_ROOT, 'temp', 'arduino_library_extract'),
                         help='Directory for extraction')
-    parser.add_argument('--output-dir', default='resources/libs/arduino/all-zip',
+    parser.add_argument('--output-dir', 
+                        default=os.path.join(PROJECT_ROOT, 'resources/libs/arduino/all-zip'),
                         help='Output directory for ZIP file')
     parser.add_argument('--debug', action='store_true', help='Enable debug output')
     
     args = parser.parse_args()
     
-    # 날짜 기반 버전 설정
-    today = datetime.now().strftime('%Y.%m.%d')
-    filename = f"ETboard_Arduino_Libraries_v{today}.zip"
+    if args.debug:
+        print(f"Project root: {PROJECT_ROOT}")
+        print(f"ETboard path: {args.etboard_path}")
+        print(f"Original path: {args.original_path}")
     
-    if args.command == 'extract-versions':
-        etboard_meta_path = os.path.join(args.etboard_path, '_file_meta.json')
-        original_meta_path = os.path.join(args.original_path, '_file_meta.json')
-        
-        versions = extract_versions(etboard_meta_path, original_meta_path)
-        for lib, version in versions.items():
-            print(f'{lib}: v{version}')
+    # 버전 없는 파일명 사용
+    filename = "ETboard_Arduino_Libraries.zip"
     
-    elif args.command == 'process-libraries':
+    if args.command == 'process-libraries':
         process_libraries(args.etboard_path, args.bundle_dir, args.extract_dir, args.debug)
         process_libraries(args.original_path, args.bundle_dir, args.extract_dir, args.debug)
         
@@ -359,44 +289,32 @@ def main():
                     print(f"{indent}  {f}")
     
     elif args.command == 'create-bundle':
-        etboard_meta_path = os.path.join(args.etboard_path, '_file_meta.json')
-        original_meta_path = os.path.join(args.original_path, '_file_meta.json')
-        
-        versions = extract_versions(etboard_meta_path, original_meta_path)
-        
         os.makedirs(args.output_dir, exist_ok=True)
         output_file = os.path.join(args.output_dir, filename)
         
-        create_bundle(args.bundle_dir, output_file, today, versions, args.debug)
+        create_bundle(args.bundle_dir, output_file, None, None, args.debug)
     
     elif args.command == 'full-process':
         try:
-            # 1. 버전 정보 추출
-            etboard_meta_path = os.path.join(args.etboard_path, '_file_meta.json')
-            original_meta_path = os.path.join(args.original_path, '_file_meta.json')
-            
-            versions = extract_versions(etboard_meta_path, original_meta_path)
-            if args.debug:
-                print("Extracted versions:")
-                for lib, version in versions.items():
-                    print(f'  {lib}: v{version}')
-            
-            # 2. 라이브러리 처리
+            # 1. 라이브러리 처리
             process_libraries(args.etboard_path, args.bundle_dir, args.extract_dir, args.debug)
             process_libraries(args.original_path, args.bundle_dir, args.extract_dir, args.debug)
             
-            # 3. 번들 생성
+            # 2. 번들 생성
             os.makedirs(args.output_dir, exist_ok=True)
             output_file = os.path.join(args.output_dir, filename)
             
-            create_bundle(args.bundle_dir, output_file, today, versions, args.debug)
+            create_bundle(args.bundle_dir, output_file, None, None, args.debug)
             
             print(f"\nBundle created successfully: {output_file}")
             
         finally:
-            # 4. 정리
+            # 3. 정리
             cleanup(args.bundle_dir, args.extract_dir, args.debug)
 
 if __name__ == "__main__":
     main()
-    
+
+# ********************************************************************************
+# End of File
+# ********************************************************************************    
