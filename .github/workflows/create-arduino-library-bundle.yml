@@ -56,18 +56,57 @@ jobs:
           TAG="${{ env.RELEASE_PREFIX }}_v${VERSION}"
           echo "TAG=${TAG}" >> $GITHUB_ENV
 
-      - name: Create bundle directory structure
+      - name: Create bundle directory structure (아두이노 라이브러리 표준 구조)
         run: |
           echo ">> Creating Arduino library bundle directory structure..."
-          # 작업 디렉토리 생성 (기존 워크플로우와 충돌 방지)
-          mkdir -p ${{ env.BUNDLE_DIR }}/libraries
+          # 작업 디렉토리 생성
+          mkdir -p ${{ env.BUNDLE_DIR }}
           
-          # 아두이노 라이브러리 파일 복사
-          cp -r resources/libs/arduino/etboard/* ${{ env.BUNDLE_DIR }}/libraries/
-          cp -r resources/libs/arduino/original/* ${{ env.BUNDLE_DIR }}/libraries/
+          # 1. ET 라이브러리 복사 및 정리
+          echo ">> Processing ETboard libraries..."
+          for lib_dir in resources/libs/arduino/etboard/*/; do
+            if [ -d "$lib_dir" ]; then
+              # 라이브러리 이름 추출
+              lib_name=$(basename "$lib_dir")
+              
+              # MetaFileUpdate.py, FileMetaManager.py, 루트 README.md 제외
+              if [[ "$lib_name" != *"_file_meta.json"* && "$lib_name" != *"MetaFileUpdate.py"* && "$lib_name" != *"FileMetaManager.py"* ]]; then
+                echo "Copying library: $lib_name"
+                mkdir -p "${{ env.BUNDLE_DIR }}/$lib_name"
+                cp -r "$lib_dir"/* "${{ env.BUNDLE_DIR }}/$lib_name/"
+                
+                # 불필요한 메타파일 제거
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "MetaFileUpdate.py" -type f -delete
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "FileMetaManager.py" -type f -delete
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "_file_meta.json" -type f -delete
+              fi
+            fi
+          done
           
-          # _file_meta.json 파일 제외 (필요 없는 메타 파일 제거)
-          find ${{ env.BUNDLE_DIR }}/libraries -name "_file_meta.json" -type f -delete
+          # 2. Original 라이브러리 복사 및 정리
+          echo ">> Processing original libraries..."
+          for lib_dir in resources/libs/arduino/original/*/; do
+            if [ -d "$lib_dir" ]; then
+              # 라이브러리 이름 추출
+              lib_name=$(basename "$lib_dir")
+              
+              # 메타파일 제외
+              if [[ "$lib_name" != *"_file_meta.json"* && "$lib_name" != *"MetaFileUpdate.py"* && "$lib_name" != *"FileMetaManager.py"* ]]; then
+                echo "Copying library: $lib_name"
+                mkdir -p "${{ env.BUNDLE_DIR }}/$lib_name"
+                cp -r "$lib_dir"/* "${{ env.BUNDLE_DIR }}/$lib_name/"
+                
+                # 불필요한 메타파일 제거
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "MetaFileUpdate.py" -type f -delete
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "FileMetaManager.py" -type f -delete
+                find "${{ env.BUNDLE_DIR }}/$lib_name" -name "_file_meta.json" -type f -delete
+              fi
+            fi
+          done
+          
+          # 디버깅을 위한 디렉토리 구조 출력
+          echo ">> Final directory structure:"
+          find ${{ env.BUNDLE_DIR }} -type d | sort
 
       - name: Create version extraction script
         run: |
@@ -151,7 +190,7 @@ jobs:
 
           ### 수동 설치
           1. 이 패키지의 압축을 해제합니다.
-          2. \`libraries\` 폴더의 내용을 Arduino 스케치 폴더의 \`libraries\` 폴더에 복사합니다.
+          2. 압축을 해제한 폴더 내의 모든 라이브러리 폴더를 Arduino 스케치 폴더의 \`libraries\` 폴더에 복사합니다.
              - Windows: \`%USERPROFILE%\Documents\Arduino\libraries\\\`
              - Mac/Linux: \`~/Documents/Arduino/libraries/\`
           3. Arduino IDE를 재시작합니다.
@@ -179,13 +218,23 @@ jobs:
           $(cat ${{ env.BUNDLE_DIR }}/versions.txt || echo "패키지에 포함된 라이브러리 목록")
           EOF
 
+      - name: Move README and CHANGELOG to parent directory
+        run: |
+          echo ">> Moving documentation files..."
+          mv ${{ env.BUNDLE_DIR }}/README.md ./README.md
+          mv ${{ env.BUNDLE_DIR }}/CHANGELOG.txt ./CHANGELOG.txt
+
       - name: Create ZIP bundle
         run: |
           echo ">> Creating Arduino library ZIP bundle..."
+          # 직접 라이브러리 폴더에서 압축하여 libraries/ 폴더 계층을 제거
           cd ${{ env.BUNDLE_DIR }}
           zip -r ../${{ env.FILENAME }}.zip *
           cd ..
           echo "Arduino library ZIP bundle created: ${{ env.FILENAME }}.zip"
+          
+          # 다운로드 가능하도록 README와 CHANGELOG 추가
+          zip -u ${{ env.FILENAME }}.zip README.md CHANGELOG.txt
           
           # 아티팩트 경로 설정
           echo "ARTIFACT_PATH=${{ env.FILENAME }}.zip" >> $GITHUB_ENV
@@ -211,6 +260,8 @@ jobs:
           echo ">> Cleaning up temporary Arduino library files..."
           rm -rf ${{ env.BUNDLE_DIR }}
           rm -f extract_versions.py
+          rm -f README.md
+          rm -f CHANGELOG.txt
 
 # ********************************************************************************
 # End of File
