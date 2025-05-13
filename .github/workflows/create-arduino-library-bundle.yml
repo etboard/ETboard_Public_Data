@@ -66,43 +66,47 @@ jobs:
           # _file_meta.json 파일 제외 (필요 없는 메타 파일 제거)
           find ${{ env.BUNDLE_DIR }}/libraries -name "_file_meta.json" -type f -delete
 
+      - name: Create version extraction script
+        run: |
+          cat > extract_versions.py << 'EOL'
+          #!/usr/bin/env python3
+          import json
+          import os
+
+          def extract_versions():
+              versions = {}
+              
+              # ETboard 아두이노 라이브러리 버전 정보
+              etboard_meta = 'resources/libs/arduino/etboard/_file_meta.json'
+              if os.path.exists(etboard_meta):
+                  with open(etboard_meta, 'r') as f:
+                      data = json.load(f)
+                      for lib, info in data.items():
+                          if 'version' in info:
+                              versions[lib] = info['version']
+              
+              # Original 아두이노 라이브러리 버전 정보
+              original_meta = 'resources/libs/arduino/original/_file_meta.json'
+              if os.path.exists(original_meta):
+                  with open(original_meta, 'r') as f:
+                      data = json.load(f)
+                      for lib, info in data.items():
+                          if 'version' in info:
+                              versions[lib] = info['version']
+              
+              # 버전 정보를 CHANGELOG에 사용할 형식으로 출력
+              for lib, version in versions.items():
+                  print(f'{lib}: v{version}')
+
+          extract_versions()
+          EOL
+          chmod +x extract_versions.py
+
       - name: Extract version information from meta files
         id: extract_versions
         run: |
           echo ">> Extracting Arduino library version information..."
-          # 메타 파일에서 버전 정보 추출
-          python - <<EOF
-import json
-import os
-
-def extract_versions():
-    versions = {}
-    
-    # ETboard 아두이노 라이브러리 버전 정보
-    etboard_meta = 'resources/libs/arduino/etboard/_file_meta.json'
-    if os.path.exists(etboard_meta):
-        with open(etboard_meta, 'r') as f:
-            data = json.load(f)
-            for lib, info in data.items():
-                if 'version' in info:
-                    versions[lib] = info['version']
-    
-    # Original 아두이노 라이브러리 버전 정보
-    original_meta = 'resources/libs/arduino/original/_file_meta.json'
-    if os.path.exists(original_meta):
-        with open(original_meta, 'r') as f:
-            data = json.load(f)
-            for lib, info in data.items():
-                if 'version' in info:
-                    versions[lib] = info['version']
-    
-    # 버전 정보를 CHANGELOG에 사용할 형식으로 출력
-    for lib, version in versions.items():
-        print(f'{lib}: v{version}')
-
-extract_versions()
-EOF
-          ) > ${{ env.BUNDLE_DIR }}/versions.txt
+          python extract_versions.py > ${{ env.BUNDLE_DIR }}/versions.txt
 
       - name: Create README
         run: |
@@ -181,17 +185,4 @@ EOF
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.ARTIFACT_PATH }}
-          asset_name: ${{ env.FILENAME }}.zip
-          asset_content_type: application/zip
-
-      - name: Cleanup
-        if: always()
-        run: |
-          echo ">> Cleaning up temporary Arduino library files..."
-          rm -rf ${{ env.BUNDLE_DIR }}
-
-# ********************************************************************************
-# End of File
-# ********************************************************************************
+          uploa
