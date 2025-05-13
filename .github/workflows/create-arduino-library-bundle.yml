@@ -42,8 +42,8 @@ jobs:
 
      - name: Create Arduino Library Bundle
        run: |
-         cd .github/scripts
-         python etboard_library_utils.py full-process --debug
+         # 프로젝트 루트 디렉토리에서 실행
+         python .github/scripts/etboard_library_utils.py full-process --debug
 
      - name: Upload bundle as artifact
        uses: actions/upload-artifact@v4
@@ -51,6 +51,14 @@ jobs:
          name: arduino-library-bundle
          path: ${{ env.OUTPUT_DIR }}/*.zip
          if-no-files-found: error
+
+     - name: Commit and push bundle
+       run: |
+         git config --global user.name 'GitHub Actions'
+         git config --global user.email 'actions@github.com'
+         git add ${{ env.OUTPUT_DIR }}/*.zip
+         git commit -m "Update Arduino library bundle [skip ci]"
+         git push
 
 # ********************************************************************************
 # End of File
