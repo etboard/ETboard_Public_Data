@@ -71,7 +71,7 @@ jobs:
         run: |
           echo ">> Extracting Arduino library version information..."
           # 메타 파일에서 버전 정보 추출
-          python -c "
+          python - <<EOF
 import json
 import os
 
@@ -101,14 +101,15 @@ def extract_versions():
         print(f'{lib}: v{version}')
 
 extract_versions()
-          " > ${{ env.BUNDLE_DIR }}/versions.txt
+EOF
+          ) > ${{ env.BUNDLE_DIR }}/versions.txt
 
       - name: Create README
         run: |
           echo ">> Creating Arduino library README file..."
           
           # README.md 생성
-          cat > ${{ env.BUNDLE_DIR }}/README.md << 'EOF'
+          cat > ${{ env.BUNDLE_DIR }}/README.md << EOF
           # ETboard 아두이노(Arduino) 라이브러리 묶음 패키지 v${{ env.VERSION }}
 
           이 패키지는 ETboard 하드웨어를 위한 모든 필수 Arduino 라이브러리를 포함하고 있습니다.
@@ -117,9 +118,9 @@ extract_versions()
 
           ### 수동 설치
           1. 이 패키지의 압축을 해제합니다.
-          2. `libraries` 폴더의 내용을 Arduino 스케치 폴더의 `libraries` 폴더에 복사합니다.
-             - Windows: `%USERPROFILE%\Documents\Arduino\libraries\`
-             - Mac/Linux: `~/Documents/Arduino/libraries/`
+          2. \`libraries\` 폴더의 내용을 Arduino 스케치 폴더의 \`libraries\` 폴더에 복사합니다.
+             - Windows: \`%USERPROFILE%\Documents\Arduino\libraries\\\`
+             - Mac/Linux: \`~/Documents/Arduino/libraries/\`
           3. Arduino IDE를 재시작합니다.
 
           ## 포함된 아두이노 라이브러리
@@ -136,7 +137,7 @@ extract_versions()
           echo ">> Creating Arduino library CHANGELOG file..."
           
           # CHANGELOG.txt 생성
-          cat > ${{ env.BUNDLE_DIR }}/CHANGELOG.txt << 'EOF'
+          cat > ${{ env.BUNDLE_DIR }}/CHANGELOG.txt << EOF
           # ETboard 아두이노 라이브러리 변경 이력
 
           ## ${{ env.RELEASE_DATE }} - 새 버전 배포
