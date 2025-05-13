@@ -8,13 +8,11 @@
 
 name: Create ETboard Arduino Library Bundle
 
-# 기존 워크플로우 완료 후 실행되도록 설정
+# 외부 저장소의 복사 작업 완료를 감지하기 위한 설정
 on:
- workflow_run:
-   workflows: ["Copy to Destination Public Repository"]
-   types:
-     - completed
- workflow_dispatch:  # 수동 트리거 옵션 유지
+  repository_dispatch:
+    types: [public-repo-updated]
+  workflow_dispatch:  # 수동 트리거 옵션 유지
 
 env:
  BUNDLE_DIR: "arduino_library_bundle_temp"
@@ -23,8 +21,8 @@ env:
 
 jobs:
  create-bundle:
-   # 기존 워크플로우가 성공했을 때만 실행
-   if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+   # repository_dispatch 이벤트나 수동 실행시 동작
+   if: ${{ github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch' }}
    runs-on: ubuntu-latest
    # 저장소 내용 수정을 위한 권한 추가
    permissions:
