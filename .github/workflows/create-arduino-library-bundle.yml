@@ -79,20 +79,45 @@ jobs:
               # ETboard 아두이노 라이브러리 버전 정보
               etboard_meta = 'resources/libs/arduino/etboard/_file_meta.json'
               if os.path.exists(etboard_meta):
-                  with open(etboard_meta, 'r') as f:
-                      data = json.load(f)
-                      for lib, info in data.items():
-                          if 'version' in info:
-                              versions[lib] = info['version']
+                  try:
+                      with open(etboard_meta, 'r') as f:
+                          data = json.load(f)
+                          # 데이터가 딕셔너리인지 확인
+                          if isinstance(data, dict):
+                              for lib, info in data.items():
+                                  if isinstance(info, dict) and 'version' in info:
+                                      versions[lib] = info['version']
+                          # 리스트인 경우 처리
+                          elif isinstance(data, list):
+                              for item in data:
+                                  if isinstance(item, dict) and 'name' in item and 'version' in item:
+                                      versions[item['name']] = item['version']
+                  except Exception as e:
+                      print(f"Error reading {etboard_meta}: {e}")
               
               # Original 아두이노 라이브러리 버전 정보
               original_meta = 'resources/libs/arduino/original/_file_meta.json'
               if os.path.exists(original_meta):
-                  with open(original_meta, 'r') as f:
-                      data = json.load(f)
-                      for lib, info in data.items():
-                          if 'version' in info:
-                              versions[lib] = info['version']
+                  try:
+                      with open(original_meta, 'r') as f:
+                          data = json.load(f)
+                          # 데이터가 딕셔너리인지 확인
+                          if isinstance(data, dict):
+                              for lib, info in data.items():
+                                  if isinstance(info, dict) and 'version' in info:
+                                      versions[lib] = info['version']
+                          # 리스트인 경우 처리
+                          elif isinstance(data, list):
+                              for item in data:
+                                  if isinstance(item, dict) and 'name' in item and 'version' in item:
+                                      versions[item['name']] = item['version']
+                  except Exception as e:
+                      print(f"Error reading {original_meta}: {e}")
+              
+              # 버전 정보가 없는 경우 기본값 설정
+              if not versions:
+                  print("No version information found. Using default values.")
+                  versions["ETboard_Libraries"] = "latest"
               
               # 버전 정보를 CHANGELOG에 사용할 형식으로 출력
               for lib, version in versions.items():
@@ -107,6 +132,7 @@ jobs:
         run: |
           echo ">> Extracting Arduino library version information..."
           python extract_versions.py > ${{ env.BUNDLE_DIR }}/versions.txt
+          cat ${{ env.BUNDLE_DIR }}/versions.txt
 
       - name: Create README
         run: |
@@ -129,7 +155,7 @@ jobs:
 
           ## 포함된 아두이노 라이브러리
           
-          $(cat ${{ env.BUNDLE_DIR }}/versions.txt)
+          $(cat ${{ env.BUNDLE_DIR }}/versions.txt || echo "패키지에 포함된 라이브러리 목록")
           
           ## 문의사항
           
@@ -147,7 +173,7 @@ jobs:
           ## ${{ env.RELEASE_DATE }} - 새 버전 배포
           
           ### 포함된 아두이노 라이브러리 버전:
-          $(cat ${{ env.BUNDLE_DIR }}/versions.txt)
+          $(cat ${{ env.BUNDLE_DIR }}/versions.txt || echo "패키지에 포함된 라이브러리 목록")
           EOF
 
       - name: Create ZIP bundle
@@ -169,26 +195,16 @@ jobs:
           retention-days: 90
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.TAG }}
-          release_name: ETboard Arduino Libraries v${{ env.VERSION }}
+          name: ETboard Arduino Libraries v${{ env.VERSION }}
           body_path: ${{ env.BUNDLE_DIR }}/CHANGELOG.txt
           draft: false
           prerelease: false
-        id: create_release
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.ARTIFACT_PATH }}
-          asset_name: ${{ env.FILENAME }}.zip
-          asset_content_type: application/zip
+          files: ./${{ env.ARTIFACT_PATH }}
 
       - name: Cleanup
         if: always()
